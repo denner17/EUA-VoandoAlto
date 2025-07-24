@@ -105,9 +105,9 @@ const CheckoutModal = ({ amount, onClose }: CheckoutModalProps) => {
 
           <div className="text-center">
             <Image
-              src="https://logopng.com.br/logos/mercado-pago-21.svg"
+              src="https://logodownload.org/wp-content/uploads/2019/06/mercado-pago-logo-8.png"
               alt="Logo Mercado Pago"
-              className="mx-auto h-10"
+              className="mx-auto h-auto"
               width={120}
               height={40}
               unoptimized
@@ -162,11 +162,35 @@ export default function HomePage() {
   const [selectedAmount, setSelectedAmount] = useState(50);
   const [customAmount, setCustomAmount] = useState("");
   const [isCheckoutVisible, setCheckoutVisible] = useState(false);
+  const [raisedAmount, setRaisedAmount] = useState(0);
+  const [isLoadingTotal, setIsLoadingTotal] = useState(true);
 
   const donationOptions = [25, 50, 100, 250];
   const goal = 3000;
-  const current = 25; // Valor de exemplo
-  const progress = (current / goal) * 100;
+  const progress = goal > 0 ? (raisedAmount / goal) * 100 : 0;
+
+  useEffect(() => {
+    const fetchTotal = async () => {
+      try {
+        const response = await fetch('/api/donations');
+        if (!response.ok) {
+          throw new Error('Falha ao buscar o total de doações.');
+        }
+        const data = await response.json();
+        setRaisedAmount(data.total || 0);
+      } catch (error) {
+        console.error("Erro ao buscar o total de doações:", error);
+      } finally {
+        setIsLoadingTotal(false);
+      }
+    };
+
+    fetchTotal(); // Busca o valor inicial
+    // Reativa a atualização automática a cada 30 segundos
+    const interval = setInterval(fetchTotal, 30000);
+
+    return () => clearInterval(interval); // Limpa o intervalo ao desmontar o componente
+  }, []);
 
   const handleSelectAmount = (amount: number) => {
     setSelectedAmount(amount);
@@ -223,7 +247,12 @@ export default function HomePage() {
             </p>
             <div className="mt-8">
               <div className="flex justify-between items-center mb-2 font-medium text-gray-700">
-                <span>Arrecadado: R$ {current.toLocaleString("pt-BR")}</span>
+                <span>
+                  Arrecadado:{" "}
+                  {isLoadingTotal
+                    ? "Carregando..."
+                    : `R$ ${raisedAmount.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                </span>
                 <span>Meta: R$ {goal.toLocaleString("pt-BR")}</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-4">

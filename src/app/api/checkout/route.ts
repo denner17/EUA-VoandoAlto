@@ -1,64 +1,57 @@
-// Caminho do arquivo: src/app/api/checkout/route.ts
-
+// Caminho: src/app/api/checkout/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { MercadoPagoConfig, Preference } from 'mercadopago';
-import { init } from 'next/dist/compiled/webpack/webpack';
 
-// Passo 1: Inicializar o Mercado Pago com a sua chave secreta
-// O process.env.MP_ACCESS_TOKEN pega o valor que você colocou no arquivo .env.local
+// Adicione sua Chave de Acesso do Mercado Pago no arquivo .env.local
 const client = new MercadoPagoConfig({ 
     accessToken: process.env.MP_ACCESS_TOKEN! 
 });
 
-// Esta função vai lidar com as requisições POST para /api/checkout
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    // Passo 2: Extrair os dados do corpo da requisição
-    // Esperamos receber o valor e a descrição da doação
-    const body = await request.json();
-    const { amount, description } = body;
+    const { amount, description } = await req.json();
 
-    // Validação simples para garantir que temos um valor
+    // Validação básica
     if (!amount || amount <= 0) {
-      return NextResponse.json({ error: 'O valor da doação é inválido.' }, { status: 400 });
+      return NextResponse.json({ error: "Valor inválido." }, { status: 400 });
     }
 
-    // Passo 3: Criar o objeto da "Preferência de Pagamento"
-    // Este objeto descreve a transação para o Mercado Pago
-    const preference = await new Preference(client).create({
+    const preference = new Preference(client);
+
+    const result = await preference.create({
       body: {
-        // Itens que estão sendo "comprados" (no nosso caso, uma doação)
         items: [
           {
-            id: 'doacao-atleta-123', // Um ID único para o item
-            title: description || 'Doação para a campanha do atleta',
+            id: 'doacao-denner-eua', // Um ID para o item
+            title: description,
             quantity: 1,
             unit_price: amount,
-            currency_id: 'BRL', // Moeda: Real Brasileiro
+            currency_id: 'BRL',
           },
         ],
-        // URLs para onde o usuário será redirecionado após o pagamento
+        // Adiciona uma referência única para filtrar apenas as doações desta campanha
+        external_reference: 'denner-eua-2025', 
+        
+        // Redireciona o usuário de volta para página
         back_urls: {
-          success: 'http://localhost:3000/sucesso', // URL de sucesso (vamos criar esta página)
-          failure: 'http://localhost:3000/falha',   // URL de falha
-          pending: 'http://localhost:3000/pendente', // URL para pagamentos pendentes (ex: boleto)
+          success: `${process.env.NEXT_PUBLIC_BASE_URL}/sucesso`,
+          failure: `${process.env.NEXT_PUBLIC_BASE_URL}/falha`,
+          pending: `${process.env.NEXT_PUBLIC_BASE_URL}/falha`,
         },
-        // Notifica nosso sistema automaticamente quando o pagamento for aprovado
-        // (Funcionalidade avançada, podemos implementar depois)
-        // notification_url: 'https://seusite.com/api/notifications',
+        auto_return: 'approved', // Retorna automaticamente para a página de sucesso
       },
     });
 
-    // Passo 4: Retornar o ID da preferência para o frontend
-    // O frontend usará este ID para renderizar o formulário de pagamento
-    return NextResponse.json({ id: preference.id, init_point: preference.init_point }, { status: 201 });
+    // Retorna a preferência completa, incluindo o link de checkout (init_point)
+    return NextResponse.json(result);
 
   } catch (error) {
     console.error('Erro ao criar preferência no Mercado Pago:', error);
-    // Retorna uma mensagem de erro genérica para o frontend
     return NextResponse.json(
-      { error: 'Falha ao comunicar com o Mercado Pago.' },
+      { error: 'Falha ao iniciar o processo de pagamento.' },
       { status: 500 }
     );
   }
 }
+
+
