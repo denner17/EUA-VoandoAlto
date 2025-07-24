@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import Image from 'next/image';
+import { useState, useEffect } from "react";
+import Image from "next/image";
 
 // --- Ícones (Componentes SVG) ---
 const HeartIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -194,7 +194,7 @@ export default function HomePage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           <div className="order-1 lg:order-2">
             <Image
-              src="/denner-viagem.jpg"
+              src="/denner-viagem.png"
               alt="Foto Denner"
               className="rounded-3xl shadow-2xl w-full h-auto object-cover"
               width={800}
@@ -208,15 +208,22 @@ export default function HomePage() {
               voar mais alto.
             </h1>
             <p className="mt-6 text-lg text-gray-600">
-              Me chamo Denner, sou atleta de atletismo e
-              recentemente fui aprovado com bolsa para estudar e competir nos
-              Estados Unidos. Fui aprovado na <a className="text-orange-500 hover:underline" href="https://neosho.edu/student-life/athletics/track-and-field.html" target="_blank" rel="noopener noreferrer">Neosho County CC</a>, Kansas, através dos meus resultados esportivos e acadêmicos. Agora
-              falta um último passo muito importante: o custo da minha passagem
-              aérea de ida. Por isso, estou pedindo a sua ajuda.
-              Qualquer valor faz a diferença. se não puder doar,
-              compartilhar essa campanha já me ajuda muito também! Com sua
-              contribuição, você estará fazendo parte desse sonho e me ajudando
-              a representar o Brasil nos Estados Unidos. Muito obrigado! 💙
+              Me chamo Denner, sou atleta de atletismo e recentemente ganhei uma
+              bolsa para estudar e competir nos Estados Unidos. Fui aprovado na{" "}
+              <a
+                className="text-orange-500 hover:underline font-bold"
+                href="https://neosho.edu/student-life/athletics/track-and-field.html"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Neosho County CC
+              </a>
+              , Kansas. Agora falta um último passo muito importante: o custo da minha
+              passagem aérea de ida. Por isso, estou pedindo a sua ajuda.
+              Qualquer valor faz a diferença. se não puder doar, compartilhar
+              essa campanha já me ajuda muito também! Com sua contribuição, você
+              estará fazendo parte desse sonho e me ajudando a representar o
+              Brasil na gringa. Muito obrigado! 🧡
             </p>
           </div>
         </div>
@@ -280,11 +287,57 @@ export default function HomePage() {
       <footer className="bg-gray-800 text-white py-8">
         <div className="container mx-auto px-4 text-center">
           <p>
-            &copy; {new Date().getFullYear()} DennerWebDev - Minha Campanha de Doação. Todos os direitos reservados.
+            &copy; {new Date().getFullYear()} DennerWebDev - Minha Campanha de
+            Doação. Todos os direitos reservados.
           </p>
           <p className="text-sm text-gray-400 mt-2">
             Uma iniciativa de amigos e família.
           </p>
+          <div className="flex justify-center space-x-6 mt-6">
+            <a
+              href="https://wa.me/5551992714177"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Link para o WhatsApp"
+              className="text-gray-400 hover:text-white transition-colors"
+            >
+              <Image
+                src="/icons/whatsapp-white-icon.png"
+                alt="WhatsApp"
+                width={35}
+                height={35}
+                className="inline-block"
+              />
+            </a>
+            <a
+              href="https://instagram.com/denner_04"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Link para o Instagram"
+              className="text-gray-400 hover:text-white transition-colors"
+            >
+              <Image
+                src="/icons/instagram-white-icon.webp"
+                alt="Instagram"
+                width={35}
+                height={35}
+                className="inline-block"
+              />
+            </a>
+            <a
+              href="mailto:dennerdosantos17@gmail.com"
+              aria-label="Link para enviar e-mail"
+              className="text-gray-400 hover:text-white transition-colors"
+            >
+              <Image
+                src="/icons/Gmail_Logo_White_512px.png"
+                alt="E-mail"
+                width={35}
+                height={35}
+                className="inline-block"
+              />
+            </a>
+          </div>
         </div>
       </footer>
 
