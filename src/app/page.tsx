@@ -1,103 +1,302 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState, useEffect } from "react";
+// A dependência "@mercadopago/sdk-react" foi removida.
+
+// --- Ícones (Componentes SVG) ---
+const HeartIcon = (props) => (
+  <svg
+    {...props}
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+  </svg>
+);
+
+const XIcon = (props) => (
+  <svg
+    {...props}
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M18 6 6 18" />
+    <path d="m6 6 12 12" />
+  </svg>
+);
+
+// --- Componente do Modal de Checkout (Versão Simplificada) ---
+const CheckoutModal = ({ amount, onClose }) => {
+  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Este hook é executado assim que o modal é aberto
+  useEffect(() => {
+    // Função para criar a preferência de pagamento e obter o link
+    const createPreference = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        // A chamada para a nossa API continua a mesma
+        const response = await fetch("/api/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            amount: amount,
+            description: `Doação de R$${amount} para a campanha`,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Falha ao criar a preferência de pagamento.");
+        }
+
+        const data = await response.json();
+
+        // Em vez de um ID, agora esperamos um link de pagamento direto
+        if (data.init_point) {
+          setCheckoutUrl(data.init_point);
+        } else {
+          throw new Error("URL de checkout não foi recebida da API.");
+        }
+      } catch (err) {
+        console.error(err);
+        setError(
+          "Não foi possível carregar as opções de pagamento. Tente novamente."
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    createPreference();
+  }, [amount]); // Executa novamente se o valor da doação mudar
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 p-4 animate-fade-in">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all scale-95 animate-scale-in">
+        <div className="relative p-6 sm:p-8">
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <XIcon className="w-6 h-6" />
+          </button>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+          <div className="text-center">
+            <img
+              src="https://logopng.com.br/logos/mercado-pago-21.svg"
+              alt="Logo Mercado Pago"
+              className="mx-auto h-10"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mt-4">
+              Complete sua Doação
+            </h2>
+            <p className="text-gray-600 mt-2">
+              Você será redirecionado para o ambiente seguro do Mercado Pago
+              para finalizar a doação de{" "}
+              <span className="font-bold text-blue-600">
+                R$ {amount.toFixed(2).replace(".", ",")}
+              </span>
+              .
+            </p>
+          </div>
+
+          <div
+            id="payment-container"
+            className="mt-8 h-20 flex justify-center items-center"
           >
-            Read our docs
-          </a>
+            {isLoading && (
+              <p className="text-center text-gray-600">
+                Gerando link de pagamento...
+              </p>
+            )}
+            {error && <p className="text-center text-red-600">{error}</p>}
+
+            {/* Renderiza um botão que é um link direto para o checkout do Mercado Pago */}
+            {checkoutUrl && (
+              <a
+                href={checkoutUrl}
+                target="_blank" // Opcional: abre em nova aba
+                rel="noopener noreferrer"
+                className="w-full text-center bg-blue-600 text-white font-bold py-4 px-4 rounded-lg hover:bg-blue-700 transition-all duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-blue-300"
+              >
+                Ir para Pagamento Seguro
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- Componente Principal da Página ---
+export default function HomePage() {
+  // A chamada initMercadoPago() foi removida daqui.
+
+  const [selectedAmount, setSelectedAmount] = useState(50);
+  const [customAmount, setCustomAmount] = useState("");
+  const [isCheckoutVisible, setCheckoutVisible] = useState(false);
+
+  const donationOptions = [25, 50, 100, 250];
+  const goal = 15000;
+  const current = 4250; // Valor de exemplo
+  const progress = (current / goal) * 100;
+
+  const handleSelectAmount = (amount) => {
+    setSelectedAmount(amount);
+    setCustomAmount("");
+  };
+
+  const handleCustomAmountChange = (e) => {
+    const value = e.target.value.replace(/\D/g, "");
+    setCustomAmount(value);
+    if (value) {
+      setSelectedAmount(Number(value));
+    } else {
+      setSelectedAmount(50);
+    }
+  };
+
+  const handleDonateClick = () => {
+    if (selectedAmount > 0) {
+      setCheckoutVisible(true);
+    } else {
+      alert("Por favor, escolha ou digite um valor para doar.");
+    }
+  };
+
+  return (
+    <div className="bg-gray-50 min-h-screen font-sans">
+      <main className="container mx-auto px-4 py-8 sm:py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          <div className="order-1 lg:order-2">
+            <img
+              src="/denner-viagem.jpg"
+              alt="Foto Denner"
+              className="rounded-3xl shadow-2xl w-full h-auto object-cover"
+            />
+          </div>
+          <div className="order-2 lg:order-1">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight">
+              Rumo aos <span className="text-blue-500">EUA</span>! Me ajude a
+              voar mais alto.
+            </h1>
+            <p className="mt-6 text-lg text-gray-600">
+              Me chamo Denner, sou atleta de atletismo e
+              recentemente fui aprovado com bolsa para estudar e
+              competir nos Estados Unidos. Fui aprovado na <a className="text-orange-500 hover:underline" href="">Neosho County CC</a>, Kansas, através dos meus resultados esportivos e acadêmicos. Agora
+              falta um último passo muito importante: arrecadar R$3.000 para a compra da minha
+              passagem aérea de ida. Por isso, estou pedindo a sua ajuda.
+              Qualquer valor faz a diferença. se não puder doar,
+              compartilhar essa campanha já me ajuda muito também! Com sua
+              contribuição, você estará fazendo parte desse sonho e me ajudando
+              a representar o Brasil nos Estados Unidos. Muito obrigado! 💙
+            </p>
+            <div className="mt-8">
+              <div className="flex justify-between items-center mb-2 font-medium text-gray-700">
+                <span>Arrecadado: R$ {current.toLocaleString("pt-BR")}</span>
+                <span>Meta: R$ {goal.toLocaleString("pt-BR")}</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-4">
+                <div
+                  className="bg-blue-500 h-4 rounded-full transition-all duration-1000 ease-out"
+                  style={{ width: `${progress}%` }}
+                ></div>
+              </div>
+            </div>
+          </div>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+      <section id="doar" className="bg-white py-16 sm:py-24">
+        <div className="container mx-auto px-4 text-center">
+          <HeartIcon className="mx-auto w-12 h-12 text-blue-500" />
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mt-4">
+            Faça parte desta vitória
+          </h2>
+          <p className="mt-4 max-w-2xl mx-auto text-lg text-gray-600">
+            Escolha um valor abaixo ou digite quanto você gostaria de doar. Toda
+            ajuda é bem-vinda e fará uma enorme diferença.
+          </p>
+          <div className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
+            {donationOptions.map((amount) => (
+              <button
+                key={amount}
+                onClick={() => handleSelectAmount(amount)}
+                className={`p-4 rounded-xl border-2 font-bold text-xl transition-all duration-200 ${
+                  selectedAmount === amount && !customAmount
+                    ? "bg-blue-600 text-white border-blue-600 scale-105 shadow-lg"
+                    : "bg-white text-blue-600 border-gray-200 hover:border-blue-400"
+                }`}
+              >
+                R$ {amount}
+              </button>
+            ))}
+          </div>
+          <div className="mt-6 max-w-xs mx-auto">
+            <label htmlFor="custom-amount" className="sr-only">
+              Outro valor
+            </label>
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-500 font-medium">
+                R$
+              </span>
+              <input
+                type="text"
+                id="custom-amount"
+                value={customAmount}
+                onChange={handleCustomAmountChange}
+                placeholder="Outro valor"
+                className="w-full pl-12 pr-4 py-4 text-center text-xl font-bold border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+              />
+            </div>
+          </div>
+          <div className="mt-10">
+            <button
+              onClick={handleDonateClick}
+              disabled={!selectedAmount || selectedAmount <= 0}
+              className="bg-blue-600 text-white font-extrabold text-xl py-5 px-12 rounded-xl shadow-lg hover:bg-blue-700 transform hover:scale-105 transition-all duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-blue-300 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:transform-none"
+            >
+              Doar Agora
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <footer className="bg-gray-800 text-white py-8">
+        <div className="container mx-auto px-4 text-center">
+          <p>
+            &copy; {new Date().getFullYear()} DennerWebDev - Minha Campanha de Doação. Todos os direitos reservados.
+          </p>
+          <p className="text-sm text-gray-400 mt-2">
+            Uma iniciativa de amigos e família.
+          </p>
+        </div>
       </footer>
+
+      {isCheckoutVisible && (
+        <CheckoutModal
+          amount={selectedAmount}
+          onClose={() => setCheckoutVisible(false)}
+        />
+      )}
     </div>
   );
 }
