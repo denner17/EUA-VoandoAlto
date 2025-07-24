@@ -162,35 +162,8 @@ export default function HomePage() {
   const [selectedAmount, setSelectedAmount] = useState(50);
   const [customAmount, setCustomAmount] = useState("");
   const [isCheckoutVisible, setCheckoutVisible] = useState(false);
-  const [raisedAmount, setRaisedAmount] = useState(0);
-  const [isLoadingTotal, setIsLoadingTotal] = useState(true);
 
   const donationOptions = [25, 50, 100, 250];
-  const goal = 3000;
-  const progress = goal > 0 ? (raisedAmount / goal) * 100 : 0;
-
-  useEffect(() => {
-    const fetchTotal = async () => {
-      try {
-        const response = await fetch('/api/donations');
-        if (!response.ok) {
-          throw new Error('Falha ao buscar o total de doações.');
-        }
-        const data = await response.json();
-        setRaisedAmount(data.total || 0);
-      } catch (error) {
-        console.error("Erro ao buscar o total de doações:", error);
-      } finally {
-        setIsLoadingTotal(false);
-      }
-    };
-
-    fetchTotal(); // Busca o valor inicial
-    // Reativa a atualização automática a cada 30 segundos
-    const interval = setInterval(fetchTotal, 30000);
-
-    return () => clearInterval(interval); // Limpa o intervalo ao desmontar o componente
-  }, []);
 
   const handleSelectAmount = (amount: number) => {
     setSelectedAmount(amount);
@@ -236,32 +209,15 @@ export default function HomePage() {
             </h1>
             <p className="mt-6 text-lg text-gray-600">
               Me chamo Denner, sou atleta de atletismo e
-              recentemente fui aprovado com bolsa para estudar e
-              competir nos Estados Unidos. Fui aprovado na <a className="text-orange-500 hover:underline" href="">Neosho County CC</a>, Kansas, através dos meus resultados esportivos e acadêmicos. Agora
-              falta um último passo muito importante: arrecadar R$3.000 para a compra da minha
-              passagem aérea de ida. Por isso, estou pedindo a sua ajuda.
+              recentemente fui aprovado com bolsa para estudar e competir nos
+              Estados Unidos. Fui aprovado na <a className="text-orange-500 hover:underline" href="https://neosho.edu/student-life/athletics/track-and-field.html" target="_blank" rel="noopener noreferrer">Neosho County CC</a>, Kansas, através dos meus resultados esportivos e acadêmicos. Agora
+              falta um último passo muito importante: o custo da minha passagem
+              aérea de ida. Por isso, estou pedindo a sua ajuda.
               Qualquer valor faz a diferença. se não puder doar,
               compartilhar essa campanha já me ajuda muito também! Com sua
               contribuição, você estará fazendo parte desse sonho e me ajudando
               a representar o Brasil nos Estados Unidos. Muito obrigado! 💙
             </p>
-            <div className="mt-8">
-              <div className="flex justify-between items-center mb-2 font-medium text-gray-700">
-                <span>
-                  Arrecadado:{" "}
-                  {isLoadingTotal
-                    ? "Carregando..."
-                    : `R$ ${raisedAmount.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                </span>
-                <span>Meta: R$ {goal.toLocaleString("pt-BR")}</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-4">
-                <div
-                  className="bg-blue-500 h-4 rounded-full transition-all duration-1000 ease-out"
-                  style={{ width: `${progress}%` }}
-                ></div>
-              </div>
-            </div>
           </div>
         </div>
       </main>
