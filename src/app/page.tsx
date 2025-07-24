@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
-// A dependência "@mercadopago/sdk-react" foi removida.
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
 
 // --- Ícones (Componentes SVG) ---
-const HeartIcon = (props) => (
+const HeartIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
     {...props}
     xmlns="http://www.w3.org/2000/svg"
@@ -21,7 +21,7 @@ const HeartIcon = (props) => (
   </svg>
 );
 
-const XIcon = (props) => (
+const XIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
     {...props}
     xmlns="http://www.w3.org/2000/svg"
@@ -40,7 +40,12 @@ const XIcon = (props) => (
 );
 
 // --- Componente do Modal de Checkout (Versão Simplificada) ---
-const CheckoutModal = ({ amount, onClose }) => {
+interface CheckoutModalProps {
+  amount: number;
+  onClose: () => void;
+}
+
+const CheckoutModal = ({ amount, onClose }: CheckoutModalProps) => {
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -99,10 +104,14 @@ const CheckoutModal = ({ amount, onClose }) => {
           </button>
 
           <div className="text-center">
-            <img
+            <Image
               src="https://logopng.com.br/logos/mercado-pago-21.svg"
               alt="Logo Mercado Pago"
               className="mx-auto h-10"
+              width={120}
+              height={40}
+              unoptimized
+              priority
             />
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mt-4">
               Complete sua Doação
@@ -155,16 +164,16 @@ export default function HomePage() {
   const [isCheckoutVisible, setCheckoutVisible] = useState(false);
 
   const donationOptions = [25, 50, 100, 250];
-  const goal = 15000;
-  const current = 4250; // Valor de exemplo
+  const goal = 3000;
+  const current = 25; // Valor de exemplo
   const progress = (current / goal) * 100;
 
-  const handleSelectAmount = (amount) => {
+  const handleSelectAmount = (amount: number) => {
     setSelectedAmount(amount);
     setCustomAmount("");
   };
 
-  const handleCustomAmountChange = (e) => {
+  const handleCustomAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, "");
     setCustomAmount(value);
     if (value) {
@@ -187,10 +196,13 @@ export default function HomePage() {
       <main className="container mx-auto px-4 py-8 sm:py-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           <div className="order-1 lg:order-2">
-            <img
+            <Image
               src="/denner-viagem.jpg"
               alt="Foto Denner"
               className="rounded-3xl shadow-2xl w-full h-auto object-cover"
+              width={800}
+              height={600}
+              priority
             />
           </div>
           <div className="order-2 lg:order-1">
