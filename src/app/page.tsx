@@ -21,6 +21,41 @@ const HeartIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+const CopyIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg
+    {...props}
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+    <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+  </svg>
+);
+
+const CheckIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg
+    {...props}
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="3"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M20 6 9 17l-5-5" />
+  </svg>
+);
+
 const XIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
     {...props}
@@ -39,114 +74,95 @@ const XIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-// --- Componente do Modal de Checkout (Versão Simplificada) ---
-interface CheckoutModalProps {
+// --- Componente do Modal de PIX ---
+interface PixModalProps {
   amount: number;
   onClose: () => void;
 }
 
-const CheckoutModal = ({ amount, onClose }: CheckoutModalProps) => {
-  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
+interface PixData {
+  qrCodeImage: string;
+  qrCodeCopyPaste: string;
+}
+
+const PixModal = ({ amount, onClose }: PixModalProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [pixData, setPixData] = useState<PixData | null>(null);
+  const [isCopied, setIsCopied] = useState(false);
 
-  // Este hook é executado assim que o modal é aberto
   useEffect(() => {
-    // Função para criar a preferência de pagamento e obter o link
-    const createPreference = async () => {
+    const generatePix = async () => {
       try {
         setIsLoading(true);
         setError(null);
-        // A chamada para a nossa API continua a mesma
-        const response = await fetch("/api/checkout", {
+        const response = await fetch("/api/pix", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             amount: amount,
-            description: `Doação de R$${amount} para a campanha`,
+            description: `Doação para a campanha Rumo aos EUA`,
           }),
         });
 
         if (!response.ok) {
-          throw new Error("Falha ao criar a preferência de pagamento.");
+          throw new Error("Falha ao gerar o código PIX.");
         }
 
         const data = await response.json();
-
-        // Em vez de um ID, agora esperamos um link de pagamento direto
-        if (data.init_point) {
-          setCheckoutUrl(data.init_point);
-        } else {
-          throw new Error("URL de checkout não foi recebida da API.");
-        }
+        setPixData(data);
       } catch (err) {
         console.error(err);
-        setError(
-          "Não foi possível carregar as opções de pagamento. Tente novamente."
-        );
+        setError("Não foi possível gerar o PIX. Tente novamente.");
       } finally {
         setIsLoading(false);
       }
     };
 
-    createPreference();
-  }, [amount]); // Executa novamente se o valor da doação mudar
+    generatePix();
+  }, [amount]);
+
+  const handleCopy = () => {
+    if (pixData?.qrCodeCopyPaste) {
+      navigator.clipboard.writeText(pixData.qrCodeCopyPaste);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000); // Resetar o estado após 2 segundos
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 p-4 animate-fade-in">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all scale-95 animate-scale-in">
         <div className="relative p-6 sm:p-8">
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
-          >
+          <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
             <XIcon className="w-6 h-6" />
           </button>
 
           <div className="text-center">
-            <Image
-              src="https://logodownload.org/wp-content/uploads/2019/06/mercado-pago-logo-8.png"
-              alt="Logo Mercado Pago"
-              className="mx-auto h-auto"
-              width={120}
-              height={40}
-              unoptimized
-              priority
-            />
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mt-4">
-              Complete sua Doação
-            </h2>
-            <p className="text-gray-600 mt-2">
-              Você será redirecionado para o ambiente seguro do Mercado Pago
-              para finalizar a doação de{" "}
-              <span className="font-bold text-blue-600">
-                R$ {amount.toFixed(2).replace(".", ",")}
-              </span>
-              .
-            </p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Pague com PIX</h2>
+            <p className="text-gray-600 mt-2">Para doar <span className="font-bold text-blue-600">R$ {amount.toFixed(2).replace(".", ",")}</span>, escaneie o QR Code ou copie o código abaixo.</p>
           </div>
 
-          <div
-            id="payment-container"
-            className="mt-8 h-20 flex justify-center items-center"
-          >
+          <div className="mt-6 flex flex-col items-center">
             {isLoading && (
-              <p className="text-center text-gray-600">
-                Gerando link de pagamento...
-              </p>
+              <div className="flex flex-col items-center justify-center h-64">
+                <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                <p className="mt-4 text-gray-600">Gerando seu PIX...</p>
+              </div>
             )}
-            {error && <p className="text-center text-red-600">{error}</p>}
-
-            {/* Renderiza um botão que é um link direto para o checkout do Mercado Pago */}
-            {checkoutUrl && (
-              <a
-                href={checkoutUrl}
-                target="_blank" // Opcional: abre em nova aba
-                rel="noopener noreferrer"
-                className="w-full text-center bg-blue-600 text-white font-bold py-4 px-4 rounded-lg hover:bg-blue-700 transition-all duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-blue-300"
-              >
-                Ir para Pagamento Seguro
-              </a>
+            {error && <p className="text-center text-red-600 h-64 flex items-center">{error}</p>}
+            {pixData && (
+              <div className="w-full animate-fade-in">
+                <Image src={pixData.qrCodeImage} alt="PIX QR Code" width={256} height={256} className="mx-auto rounded-lg border" />
+                <p className="text-center text-sm text-gray-500 mt-4">Ou copie o código abaixo:</p>
+                <div className="relative mt-2">
+                  <input type="text" readOnly value={pixData.qrCodeCopyPaste} className="w-full bg-gray-100 border-gray-300 rounded-lg p-3 pr-12 text-sm text-gray-700 truncate" />
+                  <button onClick={handleCopy} className="absolute inset-y-0 right-0 flex items-center px-3 bg-gray-200 hover:bg-gray-300 rounded-r-lg transition-colors">
+                    {isCopied ? <CheckIcon className="w-5 h-5 text-green-600" /> : <CopyIcon className="w-5 h-5 text-gray-600" />}
+                  </button>
+                </div>
+                {isCopied && <p className="text-center text-green-600 text-sm mt-2 animate-fade-in">Código copiado!</p>}
+              </div>
             )}
           </div>
         </div>
@@ -157,11 +173,9 @@ const CheckoutModal = ({ amount, onClose }: CheckoutModalProps) => {
 
 // --- Componente Principal da Página ---
 export default function HomePage() {
-  // A chamada initMercadoPago() foi removida daqui.
-
   const [selectedAmount, setSelectedAmount] = useState(50);
   const [customAmount, setCustomAmount] = useState("");
-  const [isCheckoutVisible, setCheckoutVisible] = useState(false);
+  const [isPixModalVisible, setPixModalVisible] = useState(false);
 
   const donationOptions = [25, 50, 100, 250];
 
@@ -182,7 +196,7 @@ export default function HomePage() {
 
   const handleDonateClick = () => {
     if (selectedAmount > 0) {
-      setCheckoutVisible(true);
+      setPixModalVisible(true);
     } else {
       alert("Por favor, escolha ou digite um valor para doar.");
     }
@@ -212,7 +226,7 @@ export default function HomePage() {
               bolsa para estudar e competir nos Estados Unidos. Fui aprovado na{" "}
               <a
                 className="text-orange-500 hover:underline font-bold"
-                href="https://neosho.edu/student-life/athletics/track-and-field.html"
+                href="https://www.neosho.edu"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -341,10 +355,10 @@ export default function HomePage() {
         </div>
       </footer>
 
-      {isCheckoutVisible && (
-        <CheckoutModal
+      {isPixModalVisible && (
+        <PixModal
           amount={selectedAmount}
-          onClose={() => setCheckoutVisible(false)}
+          onClose={() => setPixModalVisible(false)}
         />
       )}
     </div>
