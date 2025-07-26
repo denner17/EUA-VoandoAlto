@@ -1,6 +1,3 @@
-// src/app/api/pix/route.ts
-import { NextResponse } from "next/server";
-import { MercadoPagoConfig, Payment } from "mercadopago";
 
 // Adicione sua Chave de Acesso do Mercado Pago no arquivo .env.local
 const client = new MercadoPagoConfig({

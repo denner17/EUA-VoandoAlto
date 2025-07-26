@@ -80,90 +80,81 @@ interface PixModalProps {
   onClose: () => void;
 }
 
-interface PixData {
-  qrCodeImage: string;
-  qrCodeCopyPaste: string;
-}
+// ##################################################################
+// ##   COLOQUE SUA CHAVE PIX REAL AQUI (Pode ser aleatória, e-mail, etc.)   ##
+// ##################################################################
+const SUA_CHAVE_PIX_ESTATICA = "878758f4-2cf3-4419-accb-3f2797d71f5e";
 
 const PixModal = ({ amount, onClose }: PixModalProps) => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [pixData, setPixData] = useState<PixData | null>(null);
   const [isCopied, setIsCopied] = useState(false);
 
-  useEffect(() => {
-    const generatePix = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const response = await fetch("/api/pix", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            amount: amount,
-            description: `Doação para a campanha Rumo aos EUA`,
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error("Falha ao gerar o código PIX.");
-        }
-
-        const data = await response.json();
-        setPixData(data);
-      } catch (err) {
-        console.error(err);
-        setError("Não foi possível gerar o PIX. Tente novamente.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    generatePix();
-  }, [amount]);
-
   const handleCopy = () => {
-    if (pixData?.qrCodeCopyPaste) {
-      navigator.clipboard.writeText(pixData.qrCodeCopyPaste);
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000); // Resetar o estado após 2 segundos
-    }
+    navigator.clipboard.writeText(SUA_CHAVE_PIX_ESTATICA);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000); // Resetar o estado após 2 segundos
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 p-4 animate-fade-in">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all scale-95 animate-scale-in">
         <div className="relative p-6 sm:p-8">
-          <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+          >
             <XIcon className="w-6 h-6" />
           </button>
 
           <div className="text-center">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Pague com PIX</h2>
-            <p className="text-gray-600 mt-2">Para doar <span className="font-bold text-blue-600">R$ {amount.toFixed(2).replace(".", ",")}</span>, escaneie o QR Code ou copie o código abaixo.</p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
+              Faça sua Doação com PIX
+            </h2>
+            <p className="text-gray-600 mt-2">
+              O valor escolhido foi de{" "}
+              <span className="font-bold text-blue-600">
+                R$ {amount.toFixed(2).replace(".", ",")}
+              </span>
+              .
+            </p>
           </div>
 
-          <div className="mt-6 flex flex-col items-center">
-            {isLoading && (
-              <div className="flex flex-col items-center justify-center h-64">
-                <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                <p className="mt-4 text-gray-600">Gerando seu PIX...</p>
+          <div className="mt-6 flex flex-col items-center gap-6">
+            {/* Seção do QR Code */}
+            <div>
+              <p className="text-center font-semibold text-gray-800">
+                Passo 1: Escaneie o QR Code
+              </p>
+              <div className="mt-2 p-2 bg-white border rounded-lg inline-block shadow-md">
+                <Image
+                  src="/qrcode-pix.jpg" // O Next.js busca isso na pasta /public
+                  alt="QR Code para doação PIX"
+                  width={200}
+                  height={200}
+                  priority
+                />
               </div>
-            )}
-            {error && <p className="text-center text-red-600 h-64 flex items-center">{error}</p>}
-            {pixData && (
-              <div className="w-full animate-fade-in">
-                <Image src={pixData.qrCodeImage} alt="PIX QR Code" width={256} height={256} className="mx-auto rounded-lg border" />
-                <p className="text-center text-sm text-gray-500 mt-4">Ou copie o código abaixo:</p>
-                <div className="relative mt-2">
-                  <input type="text" readOnly value={pixData.qrCodeCopyPaste} className="w-full bg-gray-100 border-gray-300 rounded-lg p-3 pr-12 text-sm text-gray-700 truncate" />
-                  <button onClick={handleCopy} className="absolute inset-y-0 right-0 flex items-center px-3 bg-gray-200 hover:bg-gray-300 rounded-r-lg transition-colors">
-                    {isCopied ? <CheckIcon className="w-5 h-5 text-green-600" /> : <CopyIcon className="w-5 h-5 text-gray-600" />}
-                  </button>
-                </div>
-                {isCopied && <p className="text-center text-green-600 text-sm mt-2 animate-fade-in">Código copiado!</p>}
+            </div>
+
+            <p className="text-sm text-gray-500 -my-2">ou</p>
+
+            {/* Seção de Copiar e Colar */}
+            <div className="w-full text-center">
+              <p className="font-semibold text-gray-800">Copie a chave PIX</p>
+              <div className="relative">
+                <input type="text" readOnly value={SUA_CHAVE_PIX_ESTATICA} className="w-full bg-gray-100 border-gray-300 rounded-lg p-3 pr-12 text-center font-mono text-gray-700" />
+                <button onClick={handleCopy} className="absolute inset-y-0 right-0 flex items-center px-3 bg-gray-200 hover:bg-gray-300 rounded-r-lg transition-colors">
+                  {isCopied ? (<CheckIcon className="w-5 h-5 text-green-600" />) : (<CopyIcon className="w-5 h-5 text-gray-600" />)}
+                </button>
               </div>
-            )}
+              {isCopied && (<p className="text-center text-green-600 text-sm mt-2 animate-fade-in">Chave copiada com sucesso!</p>)}
+            </div>
+
+            <p className="text-sm text-gray-600 mt-2 text-center bg-blue-50 p-3 rounded-lg border border-blue-200">
+              Após escanear ou copiar, abra o app do seu banco e insira o valor de <span className="font-bold">R$ {amount.toFixed(2).replace(".", ",")}</span>.
+              <br />
+              Muito obrigado pela sua contribuição! Ela é fundamental para
+              realizar este sonho.
+            </p>
           </div>
         </div>
       </div>
