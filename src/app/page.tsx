@@ -213,8 +213,8 @@ export default function HomePage() {
               voar mais alto.
             </h1>
             <p className="mt-6 text-lg text-gray-600">
-              Me chamo Denner, sou atleta de atletismo e recentemente ganhei uma
-              bolsa para estudar e competir nos Estados Unidos. Fui aprovado na{" "}
+              Me chamo Denner, sou atleta de atletismo e ganhei uma bolsa para
+              estudar e competir nos Estados Unidos na{" "}
               <a
                 className="text-orange-500 hover:underline font-bold"
                 href="https://www.neosho.edu"
@@ -222,13 +222,12 @@ export default function HomePage() {
                 rel="noopener noreferrer"
               >
                 Neosho County CC
-              </a>
-              , Kansas. Agora falta um último passo muito importante: o custo da minha
-              passagem aérea de ida. Por isso, estou pedindo a sua ajuda.
-              Qualquer valor faz a diferença. se não puder doar, compartilhar
-              essa campanha já me ajuda muito também! Com sua contribuição, você
-              estará fazendo parte desse sonho e me ajudando a representar o
-              Brasil na gringa. Muito obrigado! 🧡
+              </a>, em Kansas. Estou fazendo esta campanha para arrecar o dinheiro da minha viagem e cobrir os custos dos meus pirmeiros dias. Se você torce por mim reconhece meu esforço, sua ajuda é fundamental! Se não puder contribuir
+              financeiramente com qualquer valor, compartilhar esta campanha já é uma ajuda imensa!
+              <br />
+              <br />
+              Obrigado por fazer parte deste sonho e me ajudar a representar o
+              Brasil na gringa. 🧡
             </p>
           </div>
         </div>
@@ -288,6 +287,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+     
+     <p className="bg-gray-700 text-white italic font-medium mx-auto text-center py-10">Entre em contato pelos links a baixo! Estou a disposição para tirar qualquer dúvida.</p>
 
       <footer className="bg-gray-800 text-white py-8">
         <div className="container mx-auto px-4 text-center">
